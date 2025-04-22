@@ -27,7 +27,7 @@ jobs:
 
       - name: Run the script
         run: |
-          python main.py --github_action --email {{ secrets.EMAIL }} --password {{ secrets.PASSWORD }}
+          python main.py --github_action --email ${{ secrets.EMAIL }} --password ${{ secrets.PASSWORD }}
 
       - name: Commit data to data branch
         run: |
