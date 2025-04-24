@@ -39,7 +39,7 @@ jobs:
           fi
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git fetch origin data
+          git fetch --depth=1 origin data
           git switch -c data origin/data || git switch --orphan data
           mkdir -p "$MONTH"
           cp "/tmp/$DATE.csv" "$MONTH/$DATE.csv"
