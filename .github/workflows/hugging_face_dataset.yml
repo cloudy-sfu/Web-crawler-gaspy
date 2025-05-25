@@ -31,3 +31,4 @@ jobs:
           pip install huggingface-hub
           huggingface-cli login --token ${{ secrets.HF_TOKEN }}
           huggingface-cli upload cloudy-sfu/Gaspy results --repo-type=dataset
+          huggingface-cli upload cloudy-sfu/Gaspy stations/stations.csv stations.csv --repo-type=dataset
