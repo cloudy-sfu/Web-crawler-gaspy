@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import random
 import time
 import uuid
@@ -18,7 +19,6 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S',
 )
 parser = ArgumentParser()
-parser.add_argument('--github_action', action='store_true')
 parser.add_argument('--email', type=str, required=True,
                     help='gaspy.nz account email')
 parser.add_argument('--password', type=str, required=True,
@@ -133,7 +133,8 @@ for fuel_type in selected_fuel_types:
 prices = pd.DataFrame(prices)
 prices.drop_duplicates(subset=['station_id', 'fuel_type'], inplace=True)
 prices.set_index(['station_id', 'fuel_type'], inplace=True)
-if cmd.github_action:
-    prices.to_csv(f"/tmp/{now.strftime("%Y-%m-%d")}.csv")
-else:
-    prices.to_csv(f"{now.strftime("%Y-%m-%d")}.csv")
+
+# %% Export.
+output_path = f"results/{now.strftime("%Y-%m")}/{now.strftime("%Y-%m-%d")}.csv"
+os.makedirs(os.path.dirname(output_path), exist_ok=True)
+prices.to_csv(output_path)
