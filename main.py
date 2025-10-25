@@ -2,14 +2,15 @@ import json
 import logging
 import os
 import random
+import sys
 import time
 import uuid
-from argparse import ArgumentParser
 
 import pandas as pd
 from requests import Session
+from sqlalchemy import create_engine
 from tqdm import tqdm
-import sys
+from postgresql_upsert import upsert_dataframe
 
 # %% Initialize.
 logging.basicConfig(
@@ -18,19 +19,16 @@ logging.basicConfig(
     format="[%(asctime)s] [%(levelname)s] %(message)s",
     datefmt='%Y-%m-%d %H:%M:%S',
 )
-parser = ArgumentParser()
-parser.add_argument('--email', type=str, required=True,
-                    help='gaspy.nz account email')
-parser.add_argument('--password', type=str, required=True,
-                    help='gaspy.nz account password')
-cmd, _ = parser.parse_known_args()
 with open("header/dart_header.json") as f:
     dart_header = json.load(f)
 with open("stations/max_stations") as f:
     chunk_size = int(f.read())
+neon_db = os.environ["NEON_DB"]
 
 # %% Pre-process stations.
-stations = pd.read_csv("stations/stations.csv")
+engine = create_engine(neon_db)
+with engine.begin() as c:
+    stations = pd.read_sql("select * from stations", c)
 stations.sort_values(by='geo_hash', inplace=True)
 stations['geo_hash_len'] = stations['geo_hash'].apply(len)
 stations_chunks = []
@@ -43,8 +41,8 @@ session = Session()
 response = session.post(
     url="https://gaspy.nz/api/v1/Public/login",
     data=json.dumps({
-        "email": cmd.email,
-        "password": cmd.password,
+        "email": os.environ["GASPY_EMAIL"],
+        "password": os.environ["GASPY_PASSWORD"],
         "gold_key": None,
         "v": 22,
         "a": "3.21.3",
@@ -126,15 +124,17 @@ for fuel_type in selected_fuel_types:
                     "longitude": safe_astype(station.get('lng'), float),
                     "fuel_type": fuel_type,
                     "price": safe_astype(station.get('price'), float),
-                    f"updated_time": updated_time,
+                    f"update_time": updated_time,
                 }
                 prices.append(price)
         pbar.update(1)
 prices = pd.DataFrame(prices)
 prices.drop_duplicates(subset=['station_id', 'fuel_type'], inplace=True)
-prices.set_index(['station_id', 'fuel_type'], inplace=True)
 
 # %% Export.
-output_path = f"results/{now.strftime("%Y-%m")}/{now.strftime("%Y-%m-%d")}.csv"
-os.makedirs(os.path.dirname(output_path), exist_ok=True)
-prices.to_csv(output_path)
+upsert_dataframe(
+    engine,
+    prices,
+    ['station_id', 'fuel_type', 'update_time'],
+    'fuel_prices',
+)

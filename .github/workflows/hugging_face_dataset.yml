@@ -1,4 +1,4 @@
-name: Publish to hugging face datatset
+name: Publish to Neon database
 
 on:
   schedule:
@@ -8,6 +8,11 @@ on:
 jobs:
   run-script:
     runs-on: ubuntu-latest
+
+    env:
+      NEON_DB: ${{ secrets.NEON_DB }}
+      GASPY_EMAIL: ${{ secrets.GASPY_EMAIL }}
+      GASPY_PASSWORD: ${{ secrets.GASPY_PASSWORD }}
 
     steps:
       - name: Checkout code
@@ -24,11 +29,4 @@ jobs:
 
       - name: Run the script
         run: |
-          python main.py --email ${{ secrets.EMAIL }} --password ${{ secrets.PASSWORD }}
-
-      - name: Publish to hugging face dataset
-        run: |
-          pip install huggingface-hub
-          huggingface-cli login --token ${{ secrets.HF_TOKEN }}
-          huggingface-cli upload cloudy-sfu/Gaspy results --repo-type=dataset
-          huggingface-cli upload cloudy-sfu/Gaspy stations/stations.csv stations.csv --repo-type=dataset
+          python main.py
