@@ -26,10 +26,10 @@ DDL:
 ```
 create table public.stations
 (
-   id       char(32),
-   city     char(16),
-   name     text,
-   geo_hash char(8)
+    id       char(32),
+    city     varchar(16),
+    name     text,
+    geo_hash varchar(8)
 );
 ```
 
@@ -51,15 +51,15 @@ DDL:
 ```
 create table public.fuel_prices
 (
-   station_id  char(32),
-   fuel_type   char(8),
-   brand       char(32),
-   latitude    double precision,
-   longitude   double precision,
-   price       numeric(9, 2),
-   update_time timestamp with time zone,
-   constraint fuel_prices_uniq_1
-       unique (station_id, fuel_type, update_time)
+    station_id  varchar(32),
+    fuel_type   varchar(8),
+    brand       varchar(32),
+    latitude    double precision,
+    longitude   double precision,
+    price       numeric(6, 1),
+    update_time timestamp with time zone,
+    constraint fuel_prices_uniq_1
+        unique (station_id, fuel_type, update_time)
 );
 ```
 
