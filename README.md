@@ -1,30 +1,36 @@
-# Web crawler "gaspy"
+# Web crawler `gaspy`
 
  Record petrol and diesel fuel prices in major New Zealand cities
 
 ![](https://shields.io/badge/dependencies-Python_3.12-blue)
 
-## Acknowledgement
+## Install
 
-Data source: [gaspy](https://www.gaspy.nz/)
+Create a Python virtual environment and activate.
+
+Run the following command.
+
+```
+pip install -r requirements.txt
+```
+
+Set up a database as `database.md`.
+
+Include the following variables into environment variables.
+
+| Variable       | Description                                 |
+| -------------- | ------------------------------------------- |
+| NEON_DB        | Connection string to `postgresql` database. |
+| GASPY_EMAIL    | Email of `gaspy` account.                   |
+| GASPY_PASSWORD | Password of `gaspy` account.                |
 
 
 
 ## Usage
 
-This program records petrol and diesel fuel prices, that drivers physically read from oil pumps in fuel stations and uploaded to "gaspy" website, in major New Zealand cities. See file `stations/stations.csv` for the list of fuel stations. The meaning of the columns are as follows.
+This program can get data from [`gaspy`](https://gaspy.nz) and saves to Neon database. 
 
-| Name       | Data type | Description                                                  |
-| ---------- | --------- | ------------------------------------------------------------ |
-| `id`       | `str`     | Originally `station_key` in `gaspy`, the identifier of the fuel station. |
-| `city`     | `str`     | The location of the fuel station. All stations are approximately (not strictly follow political administrative divisions) classified into 4 cities: Auckland, Wellington, Hamilton, Christchurch. |
-| `name`     | `str`     | Name of the fuel station.                                    |
-| `geo_hash` | `str`     | Geometry hash code of quadtree, which is used by `gaspy` to search fuel stations. |
-
-It publishes a dataset at [hugging face](https://huggingface.co/datasets/cloudy-sfu/Gaspy/tree/main).
+It records petrol and diesel fuel prices -- drivers physically read from oil pumps in fuel stations and uploaded to gaspy.nz website, in major New Zealand cities.
 
 GitHub Actions record updated prices of the past day in 6:00 UTC every day.
-
-- 18:00 New Zealand standard time
-- 19:00 New Zealand daylight saving time
 
