@@ -14,17 +14,17 @@ Run the following command.
 pip install -r requirements.txt
 ```
 
-Create a PostgreSQL 17 database in [Neon](https://neon.com/) database. (If using other database, the schema is "public". Fill `NEON_DB` with the connection string of your own PostgreSQL database.)
+Create a PostgreSQL 17 database in [Neon](https://neon.com/) database, or your own PostgreSQL database.
 
-Refer to `DDL` to create tables and know the meaning of columns. (If using other database, the user role in DDL should be adapted.)
+Run `database_schema.sql` in database console to mock the database schema.
 
 Include the following variables into environment variables.
 
-| Variable       | Description                         |
-| -------------- | ----------------------------------- |
-| NEON_DB        | Connection string to Neon database. |
-| GASPY_EMAIL    | Email of "gaspy" account.           |
-| GASPY_PASSWORD | Password of "gaspy" account.        |
+| Variable       | Description                                                  |
+| -------------- | ------------------------------------------------------------ |
+| NEON_DB        | Connection string to Neon database. If using other database, set to connection string of your own PostgreSQL database. |
+| GASPY_EMAIL    | Email of "gaspy" account.                                    |
+| GASPY_PASSWORD | Password of "gaspy" account.                                 |
 
 
 
