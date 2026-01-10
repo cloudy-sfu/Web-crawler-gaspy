@@ -10,6 +10,7 @@ import pandas as pd
 from requests import Session
 from sqlalchemy import create_engine
 from tqdm import tqdm
+
 from postgresql_upsert import upsert_dataframe
 
 # %% Initialize.
@@ -21,20 +22,19 @@ logging.basicConfig(
 )
 with open("header/dart_header.json") as f:
     dart_header = json.load(f)
-with open("stations/max_stations") as f:
-    chunk_size = int(f.read())
+stations_chunk_size = 39
 neon_db = os.environ["NEON_DB"]
 
 # %% Pre-process stations.
 engine = create_engine(neon_db)
-with engine.begin() as c:
+with engine.connect() as c:
     stations = pd.read_sql("select * from stations", c)
 stations.sort_values(by='geo_hash', inplace=True)
 stations['geo_hash_len'] = stations['geo_hash'].apply(len)
 stations_chunks = []
 for length, subset in stations.groupby('geo_hash_len'):
-    for i in range(0, subset.shape[0], chunk_size):
-        stations_chunks.append(subset.iloc[i:i+chunk_size])
+    for i in range(0, subset.shape[0], stations_chunk_size):
+        stations_chunks.append(subset.iloc[i:i+stations_chunk_size])
 
 # %% Login.
 session = Session()
@@ -69,7 +69,7 @@ start_time = now - pd.Timedelta(days=1)
 device_id = str(uuid.uuid4()).upper()
 pbar = tqdm(desc="Record fuel prices",
             total=len(selected_fuel_types) * len(stations_chunks))
-prices = []
+compound_data = []
 
 
 def safe_astype(ins, cls):
@@ -83,7 +83,7 @@ for fuel_type in selected_fuel_types:
     fuel_type_id = fuel_types[fuel_type]
     price_per_type = []
     for chunk in stations_chunks:
-        geo_hash_list = chunk['geo_hash'].tolist()
+        geo_hash_list = chunk['geo_hash'].unique().tolist()
         response = session.post(
             url="https://gaspy.nz/api/v1/Map/blocksFromHashcodes",
             data=json.dumps({
@@ -117,24 +117,44 @@ for fuel_type in selected_fuel_types:
                 updated_time_str, format="%Y-%m-%dT%H:%M:%S.%fZ", errors='coerce')
             updated_time = updated_time_naive.tz_localize(tz='UTC', nonexistent='NaT')
             if updated_time >= start_time:
-                price = {
+                compound_data.append({
                     "station_id": station.get('stationKey', pd.NA),
                     "brand": brands.get(station.get('brandId'), pd.NA),
-                    "latitude": safe_astype(station.get('lat'), float),
-                    "longitude": safe_astype(station.get('lng'), float),
                     "fuel_type": fuel_type,
                     "price": safe_astype(station.get('price'), float),
-                    f"update_time": updated_time,
-                }
-                prices.append(price)
+                    "update_time": updated_time,
+                    "latitude": safe_astype(station.get('lat'), float),
+                    "longitude": safe_astype(station.get('lng'), float),
+                    "geo_hash": station.get('geoHash', pd.NA),
+                    "name": station.get('stationName', pd.NA),
+                })
         pbar.update(1)
-prices = pd.DataFrame(prices)
-prices.drop_duplicates(subset=['station_id', 'fuel_type'], inplace=True)
 
-# %% Export.
-upsert_dataframe(
-    engine,
-    prices,
-    ['station_id', 'fuel_type', 'update_time'],
-    'fuel_prices',
-)
+compound_data = pd.DataFrame(compound_data)
+compound_data.drop_duplicates(subset=['station_id', 'fuel_type'], inplace=True)
+compound_data["name"] = compound_data["name"].str[:128]
+prices = compound_data[['station_id', 'brand', 'fuel_type', 'price', 'update_time']]
+
+db_writing_chunk_size = 2000
+for i in range(0, prices.shape[0], db_writing_chunk_size):
+    upsert_dataframe(
+        engine,
+            prices.iloc[i:i + db_writing_chunk_size],
+        ['station_id', 'fuel_type', 'update_time'],
+        'fuel_prices',
+    )
+logging.info(f"Successfully upsert {prices.shape[0]} rows to the database.")
+
+# %% Insert stations.
+compound_data.drop_duplicates(subset=['station_id'], inplace=True)
+compound_data.dropna(subset=['geo_hash'], inplace=True)
+station_locs = compound_data[['station_id', 'name', 'geo_hash', 'latitude', 'longitude']]
+
+for i in range(0, station_locs.shape[0], db_writing_chunk_size):
+    upsert_dataframe(
+        engine,
+            station_locs.iloc[i:i + db_writing_chunk_size],
+        ['station_id'],
+        'stations'
+    )
+logging.info(f"Successfully upsert {station_locs.shape[0]} rows to the database.")

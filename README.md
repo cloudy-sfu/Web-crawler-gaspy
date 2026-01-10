@@ -2,7 +2,7 @@
 
  Record petrol and diesel fuel prices in major New Zealand cities
 
-![](https://shields.io/badge/dependencies-Python_3.12-blue)
+![](https://shields.io/badge/dependencies-Python_3.13-blue)
 
 ## Install
 
