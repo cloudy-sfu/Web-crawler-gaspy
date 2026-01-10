@@ -2,9 +2,9 @@
 -- PostgreSQL database dump
 --
 
-\restrict d3O6mq6ZzqaJ9d3CFOIMWVvmQyg5HmMROv6bNdOzvxuVd1OHpNn5rlvhyrREfmc
+\restrict soHi3mUDXsWfHt8c1Ha0bsEhBMEwd11rdVmIEOiC8Syd9BKyGZBJwk0xWxNljOM
 
--- Dumped from database version 17.7 (bdc8956)
+-- Dumped from database version 17.7 (e429a59)
 -- Dumped by pg_dump version 17.7
 
 SET statement_timeout = 0;
@@ -29,8 +29,6 @@ CREATE TABLE public.fuel_prices (
     station_id character varying(32),
     fuel_type character varying(8),
     brand character varying(32),
-    latitude double precision,
-    longitude double precision,
     price numeric(6,1),
     update_time timestamp with time zone
 );
@@ -65,20 +63,6 @@ COMMENT ON COLUMN public.fuel_prices.brand IS 'Brand of the fuel station. If mis
 
 
 --
--- Name: COLUMN fuel_prices.latitude; Type: COMMENT; Schema: public; Owner: -
---
-
-COMMENT ON COLUMN public.fuel_prices.latitude IS 'Latitude of the location of the fuel station.';
-
-
---
--- Name: COLUMN fuel_prices.longitude; Type: COMMENT; Schema: public; Owner: -
---
-
-COMMENT ON COLUMN public.fuel_prices.longitude IS 'Longitude of the location of the fuel station.';
-
-
---
 -- Name: COLUMN fuel_prices.price; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -97,10 +81,12 @@ COMMENT ON COLUMN public.fuel_prices.update_time IS 'The time that the fuel pric
 --
 
 CREATE TABLE public.stations (
-    id character(32),
+    id character(32) NOT NULL,
     city character varying(16),
     name text,
-    geo_hash character varying(8)
+    geo_hash character varying(8),
+    latitude double precision,
+    longitude double precision
 );
 
 
@@ -148,8 +134,16 @@ ALTER TABLE ONLY public.fuel_prices
 
 
 --
+-- Name: stations stations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.stations
+    ADD CONSTRAINT stations_pkey PRIMARY KEY (id);
+
+
+--
 -- PostgreSQL database dump complete
 --
 
-\unrestrict d3O6mq6ZzqaJ9d3CFOIMWVvmQyg5HmMROv6bNdOzvxuVd1OHpNn5rlvhyrREfmc
+\unrestrict soHi3mUDXsWfHt8c1Ha0bsEhBMEwd11rdVmIEOiC8Syd9BKyGZBJwk0xWxNljOM
 

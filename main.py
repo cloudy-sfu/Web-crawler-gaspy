@@ -120,11 +120,9 @@ for fuel_type in selected_fuel_types:
                 price = {
                     "station_id": station.get('stationKey', pd.NA),
                     "brand": brands.get(station.get('brandId'), pd.NA),
-                    "latitude": safe_astype(station.get('lat'), float),
-                    "longitude": safe_astype(station.get('lng'), float),
                     "fuel_type": fuel_type,
                     "price": safe_astype(station.get('price'), float),
-                    f"update_time": updated_time,
+                    "update_time": updated_time,
                 }
                 prices.append(price)
         pbar.update(1)

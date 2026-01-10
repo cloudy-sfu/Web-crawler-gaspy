@@ -3,10 +3,11 @@ charset-normalizer==3.4.1
 colorama==0.4.6
 greenlet==3.2.4
 idna==3.10
-numpy==2.2.5
+natsort==8.4.0
+numpy==2.4.1
 packaging==25.0
-pandas==2.2.3
-pipdeptree==2.29.0
+pandas==2.3.3
+pipdeptree==2.30.0
 psycopg2==2.9.11
 pycryptodome==3.22.0
 python-dateutil==2.9.0.post0
