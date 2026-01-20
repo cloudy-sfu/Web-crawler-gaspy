@@ -130,11 +130,21 @@ def generate_map_figure(fuel_type):
     if fuel_type:
         df = get_latest_prices(fuel_type)
         if not df.empty:
-            # FIX: Use scatter_map (no deprecation warning)
             fig = px.scatter_map(
                 df, lat="latitude", lon="longitude", color="price",
                 custom_data=["brand", "price", "station_id", "name"],
-                color_continuous_scale="Inferno",
+                color_continuous_scale=[
+                    [0.0, "rgb(35,123,73)"],    # Dark Green
+                    [0.1, "rgb(48,145,86)"],
+                    [0.2, "rgb(94,172,118)"],
+                    [0.3, "rgb(152,201,163)"],
+                    [0.4, "rgb(209,230,214)"],  # Light Green
+                    [0.6, "rgb(244,204,204)"],  # Light Red
+                    [0.7, "rgb(231,148,148)"],
+                    [0.8, "rgb(212,88,90)"],
+                    [0.9, "rgb(189,17,29)"],
+                    [1.0, "rgb(136,13,22)"]     # Dark Red
+                ],
                 zoom=zoom_level,
                 height=None
             )
